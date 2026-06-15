@@ -1,0 +1,17 @@
+{
+  "id": "hotbar-dock",
+  "title": "Hotbar Dock",
+  "version": "0.0.1",
+  "description": "Permet à chaque utilisateur de masquer/afficher et déplacer sa hotbar sans modifier les données du monde.",
+  "author": "Unknown",
+  "minimumCoreVersion": "13",
+  "compatibleCoreVersion": "13",
+  "scripts": ["hotbar-dock.js"],
+  "styles": ["hotbar-dock.css"],
+  "esmodules": [],
+  "url": "https://github.com/elesmondes-bremmort/hotbar-dock",
+  "manifest": "https://raw.githubusercontent.com/elesmondes-bremmort/hotbar-dock/main/module.json",
+  "download": "https://github.com/elesmondes-bremmort/hotbar-dock/archive/refs/heads/main.zip",
+  "license": "MIT",
+  "readme": "README.md"
+}

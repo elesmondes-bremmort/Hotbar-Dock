@@ -1,0 +1,53 @@
+.hotbar-dock-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+#hotbar.hotbar-dock-managed,
+.hotbar.hotbar-dock-managed {
+  transition: opacity 200ms ease !important;
+  opacity: 0.25;
+}
+
+#hotbar.hotbar-dock-managed:hover,
+.hotbar.hotbar-dock-managed:hover {
+  opacity: 1 !important;
+}
+
+#hotbar.hotbar-dock-managed.hotbar-dock-hidden,
+.hotbar.hotbar-dock-managed.hotbar-dock-hidden {
+  opacity: 0 !important;
+}
+
+#hotbar.hotbar-dock-managed,
+.hotbar.hotbar-dock-managed {
+  position: fixed;
+}
+
+#hotbar-dock-toggle {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(212, 175, 55, 0.8);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  color: rgba(212, 175, 55, 1);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.45);
+}
+
+#hotbar-dock-toggle:hover {
+  background: rgba(10, 10, 10, 0.95);
+}
+
+body.hotbar-dock-dragging {
+  cursor: move;
+}
