@@ -1,17 +1,28 @@
 #hotbar.hotbar-dock-managed,
 .hotbar.hotbar-dock-managed {
   position: fixed !important;
-  transform: none !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
   transition: opacity 0.15s ease !important;
   opacity: 0.25;
+  max-width: calc(100vw - 96px);
+}
+
+#hotbar.hotbar-dock-managed.hotbar-dock-top,
+.hotbar.hotbar-dock-managed.hotbar-dock-top {
+  top: 16px !important;
+  bottom: auto !important;
+}
+
+#hotbar.hotbar-dock-managed.hotbar-dock-bottom,
+.hotbar.hotbar-dock-managed.hotbar-dock-bottom {
+  top: auto !important;
+  bottom: 24px !important;
 }
 
 #hotbar.hotbar-dock-managed:hover,
-.hotbar.hotbar-dock-managed:hover,
-body.hotbar-dock-dragging #hotbar.hotbar-dock-managed,
-body.hotbar-dock-dragging .hotbar.hotbar-dock-managed,
-body.hotbar-dock-resizing #hotbar.hotbar-dock-managed,
-body.hotbar-dock-resizing .hotbar.hotbar-dock-managed {
+.hotbar.hotbar-dock-managed:hover {
   opacity: 1 !important;
 }
 
@@ -21,62 +32,9 @@ body.hotbar-dock-resizing .hotbar.hotbar-dock-managed {
   pointer-events: none !important;
 }
 
-.hotbar-dock-drag-handle,
-.hotbar-dock-resize-handle {
-  position: absolute;
-  z-index: 10001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid rgba(198, 160, 82, 0.75);
-  border-radius: 5px;
-  background: rgba(18, 13, 12, 0.92);
-  color: rgba(232, 209, 151, 0.95);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.55), inset 0 0 8px rgba(103, 32, 22, 0.35);
-  font-family: var(--font-primary, serif);
-  font-size: 14px;
-  line-height: 1;
-  opacity: 0;
-  transition: opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-#hotbar.hotbar-dock-managed:hover .hotbar-dock-drag-handle,
-#hotbar.hotbar-dock-managed:hover .hotbar-dock-resize-handle,
-.hotbar.hotbar-dock-managed:hover .hotbar-dock-drag-handle,
-.hotbar.hotbar-dock-managed:hover .hotbar-dock-resize-handle,
-body.hotbar-dock-dragging .hotbar-dock-drag-handle,
-body.hotbar-dock-resizing .hotbar-dock-resize-handle {
-  opacity: 1;
-}
-
-.hotbar-dock-drag-handle:hover,
-.hotbar-dock-resize-handle:hover {
-  border-color: rgba(238, 198, 96, 0.95);
-  background: rgba(31, 18, 15, 0.98);
-}
-
-.hotbar-dock-drag-handle {
-  left: -30px;
-  top: 50%;
-  width: 24px;
-  height: 32px;
-  transform: translateY(-50%);
-  cursor: move;
-}
-
-.hotbar-dock-resize-handle {
-  right: -10px;
-  bottom: -10px;
-  width: 22px;
-  height: 22px;
-  cursor: nwse-resize;
-}
-
-#hotbar-dock-toggle {
+#hotbar-dock-toggle,
+#hotbar-dock-placement {
   position: fixed;
-  left: 16px;
-  bottom: 16px;
   z-index: 10000;
   display: flex;
   align-items: center;
@@ -94,15 +52,18 @@ body.hotbar-dock-resizing .hotbar-dock-resize-handle {
   cursor: pointer;
 }
 
-#hotbar-dock-toggle:hover {
+#hotbar-dock-toggle {
+  left: 16px;
+  bottom: 16px;
+}
+
+#hotbar-dock-placement {
+  left: 56px;
+  bottom: 16px;
+}
+
+#hotbar-dock-toggle:hover,
+#hotbar-dock-placement:hover {
   border-color: rgba(238, 198, 96, 0.95);
   background: rgba(31, 18, 15, 0.98);
-}
-
-body.hotbar-dock-dragging {
-  cursor: move;
-}
-
-body.hotbar-dock-resizing {
-  cursor: nwse-resize;
 }
