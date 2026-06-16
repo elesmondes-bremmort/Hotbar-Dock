@@ -8,9 +8,7 @@
 #hotbar.hotbar-dock-managed:hover,
 .hotbar.hotbar-dock-managed:hover,
 body.hotbar-dock-dragging #hotbar.hotbar-dock-managed,
-body.hotbar-dock-dragging .hotbar.hotbar-dock-managed,
-body.hotbar-dock-resizing #hotbar.hotbar-dock-managed,
-body.hotbar-dock-resizing .hotbar.hotbar-dock-managed {
+body.hotbar-dock-dragging .hotbar.hotbar-dock-managed {
   opacity: 1 !important;
 }
 
@@ -20,54 +18,53 @@ body.hotbar-dock-resizing .hotbar.hotbar-dock-managed {
   pointer-events: none !important;
 }
 
-.hotbar-dock-drag-handle,
-.hotbar-dock-resize-handle {
+.hotbar-dock-drag-handle {
   position: absolute;
+  left: -30px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 10001;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+
+  width: 24px;
+  height: 32px;
   padding: 0;
+
   border: 1px solid rgba(198, 160, 82, 0.75);
-  border-radius: 4px;
-  background: rgba(18, 13, 12, 0.9);
+  border-radius: 5px;
+
+  background: rgba(18, 13, 12, 0.92);
   color: rgba(232, 209, 151, 0.95);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.55), inset 0 0 8px rgba(103, 32, 22, 0.35);
+
+  box-shadow:
+    0 0 10px rgba(0, 0, 0, 0.55),
+    inset 0 0 8px rgba(103, 32, 22, 0.35);
+
   font-family: var(--font-primary, serif);
   font-size: 14px;
   line-height: 1;
+
+  cursor: move;
   opacity: 0;
-  transition: opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 #hotbar.hotbar-dock-managed:hover .hotbar-dock-drag-handle,
-#hotbar.hotbar-dock-managed:hover .hotbar-dock-resize-handle,
 .hotbar.hotbar-dock-managed:hover .hotbar-dock-drag-handle,
-.hotbar.hotbar-dock-managed:hover .hotbar-dock-resize-handle,
-body.hotbar-dock-dragging .hotbar-dock-drag-handle,
-body.hotbar-dock-resizing .hotbar-dock-resize-handle {
+body.hotbar-dock-dragging .hotbar-dock-drag-handle {
   opacity: 1;
 }
 
-.hotbar-dock-drag-handle:hover,
-.hotbar-dock-resize-handle:hover {
+.hotbar-dock-drag-handle:hover {
   border-color: rgba(238, 198, 96, 0.95);
   background: rgba(31, 18, 15, 0.98);
-}
-
-.hotbar-dock-drag-handle {
-  left: -28px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: move;
-}
-
-.hotbar-dock-resize-handle {
-  right: -10px;
-  bottom: -10px;
-  cursor: nwse-resize;
 }
 
 #hotbar-dock-toggle {
@@ -75,17 +72,25 @@ body.hotbar-dock-resizing .hotbar-dock-resize-handle {
   left: 16px;
   bottom: 16px;
   z-index: 10000;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   width: 32px;
   height: 32px;
   padding: 0;
+
   border: 1px solid rgba(198, 160, 82, 0.8);
   border-radius: 6px;
+
   background: rgba(18, 13, 12, 0.84);
   color: rgba(232, 209, 151, 1);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(103, 32, 22, 0.3);
+
+  box-shadow:
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 8px rgba(103, 32, 22, 0.3);
+
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -98,8 +103,4 @@ body.hotbar-dock-resizing .hotbar-dock-resize-handle {
 
 body.hotbar-dock-dragging {
   cursor: move;
-}
-
-body.hotbar-dock-resizing {
-  cursor: nwse-resize;
 }
