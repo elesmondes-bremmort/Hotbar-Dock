@@ -2,7 +2,7 @@
   "id": "hotbar-dock",
   "title": "Hotbar Dock",
   "description": "Permet à chaque utilisateur de masquer/afficher et déplacer sa hotbar sans modifier les données du monde.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "authors": [
     {
       "name": "Bremmort"
