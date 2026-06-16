@@ -1,46 +1,48 @@
 (() => {
   const MODULE = "hotbar-dock";
-  const SETTING_HIDDEN = "hotbar-dock.hidden";
-  const SETTING_POSITION = "hotbar-dock.position";
+  const SETTING_HIDDEN = "hidden";
+  const SETTING_LAYOUT = "layout";
   const MAX_RETRIES = 10;
   const RETRY_DELAY = 500;
+
   let hotbarElement = null;
   let retryCount = 0;
-  let dragState = {
-    active: false,
-    startX: 0,
-    startY: 0,
-    startLeft: 0,
-    startBottom: 0
-  };
+  let dragState = null;
+  let resizeState = null;
 
   Hooks.once("init", () => {
-    game.settings.register(MODULE, "hidden", {
+    game.settings.register(MODULE, SETTING_HIDDEN, {
       scope: "client",
       config: false,
       type: Boolean,
       default: false
     });
 
-    game.settings.register(MODULE, "position", {
+    game.settings.register(MODULE, SETTING_LAYOUT, {
       scope: "client",
       config: false,
       type: Object,
-      default: { left: null, bottom: null }
+      default: { left: null, top: null, width: null, height: null }
     });
   });
 
   Hooks.once("ready", () => {
     createToggleButton();
-    findHotbar();
+    scheduleHotbarRefreshes();
+  });
+
+  Hooks.on("renderHotbar", () => {
+    window.setTimeout(manageHotbar, 0);
   });
 
   function createToggleButton() {
+    if (document.querySelector("#hotbar-dock-toggle")) return;
+
     const button = document.createElement("button");
     button.id = "hotbar-dock-toggle";
     button.type = "button";
     button.title = "Afficher / masquer la hotbar";
-    button.textContent = "⌨";
+    button.textContent = "\u2328";
     button.addEventListener("click", event => {
       event.preventDefault();
       toggleHidden();
@@ -48,134 +50,199 @@
     document.body.appendChild(button);
   }
 
-  function getHotbarSelector() {
+  function findHotbar() {
     return document.querySelector("#hotbar") || document.querySelector(".hotbar");
   }
 
-  function findHotbar() {
-    hotbarElement = getHotbarSelector();
-    if (!hotbarElement && retryCount < MAX_RETRIES) {
-      retryCount += 1;
-      window.setTimeout(findHotbar, RETRY_DELAY);
-      return;
-    }
-    if (!hotbarElement) return;
+  function scheduleHotbarRefreshes() {
+    retryCount = 0;
     manageHotbar();
+    retryApplyLayout();
+  }
+
+  function retryApplyLayout() {
+    if (retryCount >= MAX_RETRIES) return;
+
+    retryCount += 1;
+    window.setTimeout(() => {
+      manageHotbar();
+      retryApplyLayout();
+    }, RETRY_DELAY);
   }
 
   function manageHotbar() {
+    hotbarElement = findHotbar();
+    if (!hotbarElement) return;
+
     hotbarElement.classList.add("hotbar-dock-managed");
+    ensureHandles(hotbarElement);
     applyHiddenState();
-    applySavedPosition();
-    attachDragHandlers();
+    applyLayout();
+  }
+
+  function ensureHandles(hotbar) {
+    let dragHandle = hotbar.querySelector(".hotbar-dock-drag-handle");
+    if (!dragHandle) {
+      dragHandle = document.createElement("button");
+      dragHandle.type = "button";
+      dragHandle.className = "hotbar-dock-drag-handle";
+      dragHandle.title = "Deplacer la hotbar";
+      dragHandle.textContent = "\u22EE\u22EE";
+      hotbar.prepend(dragHandle);
+    }
+
+    let resizeHandle = hotbar.querySelector(".hotbar-dock-resize-handle");
+    if (!resizeHandle) {
+      resizeHandle = document.createElement("button");
+      resizeHandle.type = "button";
+      resizeHandle.className = "hotbar-dock-resize-handle";
+      resizeHandle.title = "Redimensionner la hotbar";
+      resizeHandle.textContent = "\u25E2";
+      hotbar.appendChild(resizeHandle);
+    }
+
+    if (!dragHandle.dataset.hotbarDockBound) {
+      dragHandle.dataset.hotbarDockBound = "true";
+      dragHandle.addEventListener("mousedown", startDrag);
+    }
+
+    if (!resizeHandle.dataset.hotbarDockBound) {
+      resizeHandle.dataset.hotbarDockBound = "true";
+      resizeHandle.addEventListener("mousedown", startResize);
+    }
   }
 
   function applyHiddenState() {
     if (!hotbarElement) return;
-    const hidden = game.settings.get(MODULE, "hidden");
-    if (hidden) {
-      hotbarElement.classList.add("hotbar-dock-hidden");
-    } else {
-      hotbarElement.classList.remove("hotbar-dock-hidden");
-    }
+
+    const hidden = game.settings.get(MODULE, SETTING_HIDDEN);
+    hotbarElement.classList.toggle("hotbar-dock-hidden", hidden);
   }
 
-  function toggleHidden() {
-    const current = game.settings.get(MODULE, "hidden");
-    game.settings.set(MODULE, "hidden", !current).then(() => {
-      applyHiddenState();
+  function applyLayout() {
+    if (!hotbarElement) return;
+
+    const layout = game.settings.get(MODULE, SETTING_LAYOUT) || {};
+    const rect = hotbarElement.getBoundingClientRect();
+    hotbarElement.style.position = "fixed";
+    hotbarElement.style.left = `${Number.isFinite(layout.left) ? layout.left : rect.left}px`;
+    hotbarElement.style.top = `${Number.isFinite(layout.top) ? layout.top : rect.top}px`;
+    hotbarElement.style.right = "auto";
+    hotbarElement.style.bottom = "auto";
+
+    if (Number.isFinite(layout.width)) hotbarElement.style.width = `${layout.width}px`;
+    if (Number.isFinite(layout.height)) hotbarElement.style.height = `${layout.height}px`;
+  }
+
+  function saveLayoutFromHotbar() {
+    if (!hotbarElement) return;
+
+    const rect = hotbarElement.getBoundingClientRect();
+    game.settings.set(MODULE, SETTING_LAYOUT, {
+      left: Math.round(rect.left),
+      top: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
     });
   }
 
-  function applySavedPosition() {
-    if (!hotbarElement) return;
-    const position = game.settings.get(MODULE, "position") || { left: null, bottom: null };
-    if (position.left !== null || position.bottom !== null) {
-      hotbarElement.style.position = "fixed";
-      if (position.left !== null) {
-        hotbarElement.style.left = position.left;
-      }
-      if (position.bottom !== null) {
-        hotbarElement.style.bottom = position.bottom;
-      }
-      hotbarElement.style.right = "auto";
-      hotbarElement.style.top = "auto";
-    }
-  }
+  function startDrag(event) {
+    if (!hotbarElement || event.button !== 0) return;
 
-  function attachDragHandlers() {
-    if (!hotbarElement) return;
-    hotbarElement.addEventListener("mousedown", onHotbarMouseDown);
-    hotbarElement.addEventListener("touchstart", onHotbarTouchStart, { passive: false });
-  }
-
-  function onHotbarMouseDown(event) {
-    if (!event.altKey || event.button !== 0) return;
     event.preventDefault();
-    startDrag(event.clientX, event.clientY);
+    event.stopPropagation();
+
+    const rect = hotbarElement.getBoundingClientRect();
+    dragState = {
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top
+    };
+
+    hotbarElement.style.position = "fixed";
+    hotbarElement.style.left = `${rect.left}px`;
+    hotbarElement.style.top = `${rect.top}px`;
+    hotbarElement.style.right = "auto";
+    hotbarElement.style.bottom = "auto";
+
+    document.body.classList.add("hotbar-dock-dragging");
     document.addEventListener("mousemove", onDragMove);
     document.addEventListener("mouseup", onDragEnd);
   }
 
-  function onHotbarTouchStart(event) {
-    if (!event.altKey || !event.touches?.length) return;
-    const touch = event.touches[0];
-    event.preventDefault();
-    startDrag(touch.clientX, touch.clientY);
-    document.addEventListener("touchmove", onDragMove, { passive: false });
-    document.addEventListener("touchend", onDragEnd);
-  }
-
-  function startDrag(clientX, clientY) {
-    if (!hotbarElement) return;
-    const rect = hotbarElement.getBoundingClientRect();
-    hotbarElement.style.position = "fixed";
-    hotbarElement.style.right = "auto";
-    hotbarElement.style.top = "auto";
-    hotbarElement.style.left = `${rect.left}px`;
-    hotbarElement.style.bottom = `${window.innerHeight - rect.bottom}px`;
-    dragState.active = true;
-    dragState.startX = clientX;
-    dragState.startY = clientY;
-    dragState.startLeft = rect.left;
-    dragState.startBottom = window.innerHeight - rect.bottom;
-    document.body.classList.add("hotbar-dock-dragging");
-  }
-
   function onDragMove(event) {
-    if (!dragState.active) return;
-    event.preventDefault();
-    const clientX = event.type.startsWith("touch") ? event.touches[0].clientX : event.clientX;
-    const clientY = event.type.startsWith("touch") ? event.touches[0].clientY : event.clientY;
-    updateDragPosition(clientX, clientY);
-  }
+    if (!dragState || !hotbarElement) return;
 
-  function updateDragPosition(clientX, clientY) {
-    if (!hotbarElement) return;
-    const deltaX = clientX - dragState.startX;
-    const deltaY = clientY - dragState.startY;
-    const left = Math.max(0, dragState.startLeft + deltaX);
-    const bottom = Math.max(0, dragState.startBottom - deltaY);
+    event.preventDefault();
+
+    const left = event.clientX - dragState.offsetX;
+    const top = event.clientY - dragState.offsetY;
+    hotbarElement.style.position = "fixed";
     hotbarElement.style.left = `${left}px`;
-    hotbarElement.style.bottom = `${bottom}px`;
+    hotbarElement.style.top = `${top}px`;
+    hotbarElement.style.right = "auto";
+    hotbarElement.style.bottom = "auto";
   }
 
   function onDragEnd() {
-    if (!dragState.active) return;
-    dragState.active = false;
+    if (!dragState) return;
+
+    dragState = null;
     document.removeEventListener("mousemove", onDragMove);
     document.removeEventListener("mouseup", onDragEnd);
-    document.removeEventListener("touchmove", onDragMove);
-    document.removeEventListener("touchend", onDragEnd);
     document.body.classList.remove("hotbar-dock-dragging");
-    savePosition();
+    saveLayoutFromHotbar();
   }
 
-  function savePosition() {
-    if (!hotbarElement) return;
+  function startResize(event) {
+    if (!hotbarElement || event.button !== 0) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
     const rect = hotbarElement.getBoundingClientRect();
-    const left = `${Math.round(rect.left)}px`;
-    const bottom = `${Math.round(window.innerHeight - rect.bottom)}px`;
-    game.settings.set(MODULE, "position", { left, bottom });
+    resizeState = {
+      startX: event.clientX,
+      startY: event.clientY,
+      startWidth: rect.width,
+      startHeight: rect.height
+    };
+
+    hotbarElement.style.position = "fixed";
+    hotbarElement.style.left = `${rect.left}px`;
+    hotbarElement.style.top = `${rect.top}px`;
+    hotbarElement.style.right = "auto";
+    hotbarElement.style.bottom = "auto";
+
+    document.body.classList.add("hotbar-dock-resizing");
+    document.addEventListener("mousemove", onResizeMove);
+    document.addEventListener("mouseup", onResizeEnd);
+  }
+
+  function onResizeMove(event) {
+    if (!resizeState || !hotbarElement) return;
+
+    event.preventDefault();
+
+    const newWidth = Math.max(240, resizeState.startWidth + event.clientX - resizeState.startX);
+    const newHeight = Math.max(48, resizeState.startHeight + event.clientY - resizeState.startY);
+    hotbarElement.style.width = `${newWidth}px`;
+    hotbarElement.style.height = `${newHeight}px`;
+  }
+
+  function onResizeEnd() {
+    if (!resizeState) return;
+
+    resizeState = null;
+    document.removeEventListener("mousemove", onResizeMove);
+    document.removeEventListener("mouseup", onResizeEnd);
+    document.body.classList.remove("hotbar-dock-resizing");
+    saveLayoutFromHotbar();
+  }
+
+  function toggleHidden() {
+    const current = game.settings.get(MODULE, SETTING_HIDDEN);
+    game.settings.set(MODULE, SETTING_HIDDEN, !current).then(() => {
+      applyHiddenState();
+    });
   }
 })();
