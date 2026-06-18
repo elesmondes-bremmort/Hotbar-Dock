@@ -6,7 +6,14 @@
   transform: translateX(-50%) !important;
   transition: opacity 0.15s ease !important;
   opacity: 0.25;
-  max-width: calc(100vw - 96px);
+  width: max-content !important;
+  max-width: none !important;
+  flex-wrap: nowrap !important;
+}
+
+#hotbar.hotbar-dock-managed .macro-list,
+.hotbar.hotbar-dock-managed .macro-list {
+  flex-wrap: nowrap !important;
 }
 
 #hotbar.hotbar-dock-managed.hotbar-dock-top,

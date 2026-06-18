@@ -38,14 +38,17 @@
   }
 
   function refreshHotbar() {
-    hotbarElement = findHotbar();
-    if (!hotbarElement) return;
+  hotbarElement = findHotbar();
+  if (!hotbarElement) return;
 
-    removeOldHandles();
-    hotbarElement.classList.add("hotbar-dock-managed");
-    applyHiddenState();
-    applyPlacement();
-  }
+  removeOldHandles();
+
+  hotbarElement.classList.remove("sm", "md", "min");
+  hotbarElement.classList.add("hotbar-dock-managed");
+
+  applyHiddenState();
+  applyPlacement();
+}
 
   function createControls() {
     createButton({
